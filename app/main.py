@@ -7,8 +7,20 @@ from fastapi import FastAPI, UploadFile, File
 from app.vectors import VECTOR_STORE, add_embedding
 from processing.pdf_utils import extract_text_from_pdf, clean_text, chunk_text
 import tempfile
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="app/templates")
+
+@app.get("/", response_class=HTMLResponse)
+def serve_ui(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 app = FastAPI()
+
 
 
 @app.post("/ingest")

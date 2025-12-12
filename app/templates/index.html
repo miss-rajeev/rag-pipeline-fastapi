@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StackAI RAG Demo</title>
+</head>
+<body style="font-family: Arial; max-width: 700px; margin: auto;">
+    <h1>📄 RAG Demo</h1>
+
+    <h2>📤 Upload PDFs</h2>
+    <input type="file" id="pdfs" multiple />
+    <button onclick="ingest()">Ingest</button>
+
+    <p id="ingest-status"></p>
+
+    <hr>
+
+    <h2>❓ Ask a Question</h2>
+    <input type="text" id="question" placeholder="Ask something…" style="width: 100%; padding: 8px;">
+    <button onclick="ask()">Ask</button>
+
+    <h3>Answer:</h3>
+    <pre id="answer"></pre>
+
+    <h3>Sources:</h3>
+    <pre id="sources"></pre>
+
+<script>
+async function ingest() {
+    const files = document.getElementById("pdfs").files;
+    if (!files.length) {
+        alert("Please upload a PDF");
+        return;
+    }
+
+    const formData = new FormData();
+    for (let f of files) formData.append("files", f);
+
+    const res = await fetch("http://127.0.0.1:8000/ingest", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("ingest-status").innerText = 
+        "Ingested " + data.chunks_stored + " chunks.";
+}
+
+async function ask() {
+    const question = document.getElementById("question").value;
+    if (!question) return;
+
+    const res = await fetch("http://127.0.0.1:8000/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+    });
+
+    const data = await res.json();
+    document.getElementById("answer").innerText = data.answer;
+    document.getElementById("sources").innerText = JSON.stringify(data.sources, null, 2);
+}
+</script>
+
+</body>
+</html>

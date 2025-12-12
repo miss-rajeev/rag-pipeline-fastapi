@@ -1,44 +1,40 @@
 import os
-from mistralai import Mistral
-from typing import List
+from mistralai.client import MistralClient
+from dotenv import load_dotenv
 
 # Load API key
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 API_KEY = os.getenv("MISTRAL_API_KEY")
 
-client = Mistral(api_key=API_KEY)
+client = MistralClient(api_key=API_KEY)
+LLM_MODEL = "mistral-small-latest"
 
 
-def build_prompt(question: str, retrieved_chunks: List[str]) -> str:
-    """
-    Build the final prompt sent to the LLM using retrieved context.
-    """
-    context_text = "\n\n".join(retrieved_chunks)
+PROMPT_TEMPLATE = """
+You are an AI assistant answering based strictly on the provided context.
 
-    prompt = f"""
-You are an AI assistant. Answer the question using ONLY the provided context. 
-If the answer is not present in the context, say "I don't have enough information to answer that."
+If the answer is not in the context, say: "Insufficient evidence."
 
-### Context:
-{context_text}
+Context:
+{context}
 
-### Question:
+User question:
 {question}
 
-### Answer:
+Answer the question clearly and concisely:
 """
 
-    return prompt.strip()
 
+def generate_answer(context: str, question: str):
+    prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
-def generate_answer(question: str, retrieved_chunks: List[str]) -> str:
-    """
-    Calls the Mistral model with our prompt template + context.
-    """
-    prompt = build_prompt(question, retrieved_chunks)
-
-    response = client.chat.complete(
-        model="mistral-large-latest",
-        messages=[{"role": "user", "content": prompt}]
+    # THE CORRECT CALL
+    response = client.chat(
+        model=LLM_MODEL,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
-    return response.choices[0].message["content"]
+    # NEW client uses `message.content`
+    return response.choices[0].message.content

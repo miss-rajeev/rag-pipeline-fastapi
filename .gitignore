@@ -1,21 +1,5 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-
-# Virtual environment
 venv/
+__pycache__/
 .env
-
-# VS Code
-.vscode/
-
-# MacOS
-.DS_Store
-
-# Streamlit
-.streamlit/
-
-# Data directories
+*.pyc
 data/
-vectorstore/

@@ -14,12 +14,13 @@ from fastapi.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="app/templates")
 
+app = FastAPI()
 @app.get("/", response_class=HTMLResponse)
 def serve_ui(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-app = FastAPI()
+
 
 
 
